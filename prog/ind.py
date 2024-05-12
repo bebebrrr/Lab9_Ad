@@ -1,51 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# С использованием многопоточности для заданного значения x
+# найти сумму ряда S с точностью члена ряда по
+# абсолютному значению E = 10e-7 и произвести сравнение
+# полученной суммы с контрольным значением функции
+# для двух бесконечных рядов.
+
 import math
 import threading
 
 E = 10e-7
 
+def calc_sum(x):
+    return math.exp(-(x**2))
 
-def calc_term(x,n):
-    return ((-1) ** n) * ((x**(2*n)) / math.factorial(n))
+def calc_chis(x, n):
+    return ((-1) ** n) * (x ** (2 * n))
 
-
-def calc_sum(x, E):
-    n = 0
-    term = calc_term(x, n)
-    total_sum = term
-    while abs(term) >= E:
-        n += 1
-        term = calc_term(x, n)
-        total_sum += term
-    return total_sum
-
-
-def control(x, contv):
-    sumv = calc_sum(x, E)
-    return sumv, sumv == contv
-
+def calc_znam(n):
+    return math.factorial(n)
 
 def main():
     x = -0.7
-    contv = math.exp(-x**2)
-    result = [0]
+    results = [1] 
 
-    th1 = threading.Thread(target=calc_term, args=(x, 0))
-    th2= threading.Thread(target=calc_sum, args=(x, E))
-    th3 = threading.Thread(target=lambda: result.append(control(x, contv)))
+    i = 1
+    while True:
+        # Вычисляем числитель и знаменатель в отдельных потоках
+        th1 = threading.Thread(target=lambda: results.append(calc_chis(x, i)))
+        th2 = threading.Thread(target=lambda: results.append(calc_znam(i)))
 
-    th1.start()
-    th2.start()
-    th3.start()
+        th1.start()
+        th2.start()
 
-    th1.join()
-    th2.join()
-    th3.join()
+        th1.join()
+        th2.join()
 
-    print(f"Сумма ряда: {result[-1][0]}")
+        # Проверяем условие остановки
+        if abs(results[-2] / results[-1]) < E:
+            break
 
+        i += 1
+
+    y = calc_sum(x)
+    calculated_sum = sum(results)
+    print(f"x = {x}")
+    print(f"Ожидаемое значение y = {y}")
+    print(f"Подсчитанное значение суммы ряда = {calculated_sum}")
 
 if __name__ == "__main__":
     main()
