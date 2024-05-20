@@ -11,25 +11,27 @@ import math
 import threading
 
 E = 10e-7
+results = [1]
 
 def calc_sum(x):
     return math.exp(-(x**2))
 
-def calc_chis(x, n):
-    return ((-1) ** n) * (x ** (2 * n))
+def calc_chis(x, res):
+    res.append(-x)
 
-def calc_znam(n):
-    return math.factorial(n)
+def calc_znam(n, res):
+    res.append(n + 1)
 
 def main():
-    x = -0.7
-    results = [1] 
+    x = 1
+    i = 0
+    while math.fabs(results[-1]) > E:
+        chis = []
+        znam = []
 
-    i = 1
-    while True:
         # Вычисляем числитель и знаменатель в отдельных потоках
-        th1 = threading.Thread(target=lambda: results.append(calc_chis(x, i)))
-        th2 = threading.Thread(target=lambda: results.append(calc_znam(i)))
+        th1 = threading.Thread(target=calc_chis, args = (x, chis))
+        th2 = threading.Thread(target=calc_znam, args = (i, znam))
 
         th1.start()
         th2.start()
@@ -37,9 +39,8 @@ def main():
         th1.join()
         th2.join()
 
-        # Проверяем условие остановки
-        if abs(results[-2] / results[-1]) < E:
-            break
+        cur = chis[0] / znam[0]
+        results.append(cur * results[-1])
 
         i += 1
 
