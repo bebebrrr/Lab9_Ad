@@ -13,12 +13,15 @@ import threading
 E = 10e-7
 results = [1]
 
+# считаем целевой ряд y
 def calc_sum(x):
     return math.exp(-(x**2))
 
+# считаем числитель и кладём результат в res
 def calc_chis(x, res):
     res.append(-x)
 
+# считаем знаменатель и кладём результат в res
 def calc_znam(n, res):
     res.append(n + 1)
 
@@ -26,6 +29,7 @@ def main():
     x = 1
     i = 0
     while math.fabs(results[-1]) > E:
+        # создаём списки для возврата значений из потоков
         chis = []
         znam = []
 
